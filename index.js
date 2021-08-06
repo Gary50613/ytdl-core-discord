@@ -25,7 +25,7 @@ function nextBestFormat(formats, isLive) {
 
 const noop = () => {};
 
-async function download(url, options = {}) {
+async function download(url, options = {}, ffmpegArgs = []) {
 	const info = await ytdl.getInfo(url);
 	// Prefer opus
 	const format = info.formats.find(filter);
@@ -43,6 +43,7 @@ async function download(url, options = {}) {
 		if (!bestFormat) throw new Error('No suitable format found');
 		const transcoder = new prism.FFmpeg({
 			args: [
+				...ffmpegArgs,
 				'-reconnect', '1',
 				'-reconnect_streamed', '1',
 				'-reconnect_delay_max', '5',
