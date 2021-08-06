@@ -32,7 +32,7 @@ async function download(url, options = {}, ffmpegArgs = []) {
 	const canDemux = format && info.videoDetails.lengthSeconds != 0;
 	if (canDemux) options = { ...options, filter };
 	else if (info.videoDetails.lengthSeconds != 0) options = { ...options, filter: 'audioonly' };
-	if (canDemux) {
+	if (canDemux && ffmpegArgs.length === 0) {
 		const demuxer = new prism.opus.WebmDemuxer();
 		return pipeline([
 			ytdl.downloadFromInfo(info, options),
