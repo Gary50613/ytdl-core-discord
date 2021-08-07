@@ -43,7 +43,6 @@ async function download(url, options = {}, ffmpegArgs = []) {
 		if (!bestFormat) throw new Error('No suitable format found');
 		const transcoder = new prism.FFmpeg({
 			args: [
-				...ffmpegArgs,
 				'-reconnect', '1',
 				'-reconnect_streamed', '1',
 				'-reconnect_delay_max', '5',
@@ -53,6 +52,7 @@ async function download(url, options = {}, ffmpegArgs = []) {
 				'-f', 's16le',
 				'-ar', '48000',
 				'-ac', '2',
+				...ffmpegArgs,
 			],
 			shell: false,
 		});
