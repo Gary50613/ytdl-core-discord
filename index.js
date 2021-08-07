@@ -42,9 +42,9 @@ async function download(url, options = {}) {
 		], noop);
 	} else {
 		const bestFormat = nextBestFormat(info.formats, info.videoDetails.isLiveContent);
-		if (!bestFormat) throw new Error('No suitable format found');
+		if (!bestFormat) return null
 		if(options?.debug)
-			console.log(options?.ffmpegArgs)
+			console.log(`ffmpeg args used ${options?.ffmpegArgs}`)
 		const transcoder = new prism.FFmpeg({
 			args: [
 				'-reconnect', '1',
@@ -61,7 +61,13 @@ async function download(url, options = {}) {
 			shell: false,
 		});
 		const opus = new prism.opus.Encoder({ rate: 48000, channels: 2, frameSize: 960 });
-		return pipeline([transcoder, opus], noop);
+		const stream = pipeline([transcoder, opus], noop)
+		stream._destroy = () => {
+			transcoder?.process?.kill?.(1)
+			transcoder?.destroy()
+			opus?.destroy()
+		}
+		return stream;
 	}
 }
 

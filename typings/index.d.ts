@@ -6,7 +6,11 @@ declare interface downloadOptions extends ytdl.downloadOptions {
   ffmpegArgs?: Iterable<String>
 }
 
-declare function download(link: string, options?: downloadOptions, ffmpegArgs?: Iterable<string>): Promise<Readable>;
+declare interface extendedReadable extends Readable {
+  _destroy: any
+}
+
+declare function download(link: string, options?: downloadOptions, ffmpegArgs?: Iterable<string>): Promise<extendedReadable>;
 
 declare namespace ytdlDiscord {
   const newDownload: typeof download & typeof ytdl;
