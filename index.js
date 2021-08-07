@@ -25,14 +25,14 @@ function nextBestFormat(formats, isLive) {
 
 const noop = () => {};
 
-async function download(url, options = {}, ffmpegArgs = []) {
+async function download(url, options = {}) {
 	const info = await ytdl.getInfo(url);
 	// Prefer opus
 	const format = info.formats.find(filter);
 	const canDemux = format && info.videoDetails.lengthSeconds != 0;
 	if (canDemux) options = { ...options, filter };
 	else if (info.videoDetails.lengthSeconds != 0) options = { ...options, filter: 'audioonly' };
-	if (canDemux && ffmpegArgs.length === 0) {
+	if (canDemux && (!options?.ffmpegArgs || options?.ffmpegArgs?.length === 0)) {
 		const demuxer = new prism.opus.WebmDemuxer();
 		return pipeline([
 			ytdl.downloadFromInfo(info, options),
@@ -41,6 +41,8 @@ async function download(url, options = {}, ffmpegArgs = []) {
 	} else {
 		const bestFormat = nextBestFormat(info.formats, info.videoDetails.isLiveContent);
 		if (!bestFormat) throw new Error('No suitable format found');
+		if(options?.debug)
+			console.log(options?.ffmpegArgs)
 		const transcoder = new prism.FFmpeg({
 			args: [
 				'-reconnect', '1',
@@ -52,7 +54,7 @@ async function download(url, options = {}, ffmpegArgs = []) {
 				'-f', 's16le',
 				'-ar', '48000',
 				'-ac', '2',
-				...ffmpegArgs,
+				...(options?.ffmpegArgs ?? []),
 			],
 			shell: false,
 		});
