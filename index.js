@@ -63,9 +63,11 @@ async function download(url, options = {}) {
 		const opus = new prism.opus.Encoder({ rate: 48000, channels: 2, frameSize: 960 });
 		const stream = pipeline([transcoder, opus], noop)
 		stream._destroy = () => {
-			transcoder?.process?.kill?.(1)
-			transcoder?.destroy()
-			opus?.destroy()
+			try {
+				transcoder?.process?.kill?.(1)
+				transcoder?.destroy()
+				opus?.destroy()
+			} catch (e) {}
 		}
 		return stream;
 	}
